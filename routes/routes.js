@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const router = express.Router();
 const controller = require("../controller/controller");
 const { sendEmailContact } = require("../controller/emailController");
@@ -6,6 +7,14 @@ const admin = require("../model/createAdmin");
 
 router.get("/test", (req, res) => {
   res.send("<h1>Ansar Backend is up and running :)</h1>");
+});
+
+// Legal pages (served for SMS/A2P compliance and general use).
+router.get("/privacy", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "privacy.html"));
+});
+router.get("/terms", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "terms.html"));
 });
 
 // router.get("/email", (req, res) => {
