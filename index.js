@@ -13,6 +13,10 @@ app.use(express.static(path.join(__dirname, "public")));
 // Use environment variable for the port, defaulting to 4000 if not provided
 const port = process.env.PORT || 4000;
 
+// Mounted BEFORE express.json(): the relay must see the raw body bytes,
+// the AmanaTa HMAC signature covers them exactly.
+app.use("/amanata-relay", require("./routes/amanataRelay"));
+
 app.use(express.json());
 app.use(cors());
 app.use("/", routes);
