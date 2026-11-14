@@ -46,6 +46,7 @@ const sendEmailContact = async(data,res) => {
         });
     }else{
         console.log("Invalid recipient email address");
+        return res.status(400).json({ success: false, message: "Invalid email address." });
     }
 }
 

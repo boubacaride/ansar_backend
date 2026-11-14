@@ -21,8 +21,95 @@ router.get("/terms", (req, res) => {
 //   sendEmail("work632294@gmail.com");
 // });
 
-router.post("/contact_email", (req, res) => {
+router.post("/contact_email", async (req, res) => {
+  // Store the question first (2026-11-14): SoftHadj lists these; a mail
+  // failure must not lose the record, and a store failure must not block
+  // the mail.
+  try {
+    const Contact = require("../schema/contactSchema");
+    const { email, subject, message } = req.body || {};
+    if (email && subject && message) {
+      await Contact.create({ email, subject, message });
+    }
+  } catch (err) {
+    console.log("Contact store failed:", err.message);
+  }
   sendEmailContact(req.body, res);
+});
+
+// Airplane-ticket requests (2026-11-14): stored for SoftHadj's Billets
+// d'avion table; the company is still notified by email via the existing
+// contact mailer so nothing changes operationally.
+router.post("/ticket_book", async (req, res) => {
+  try {
+    const Ticket = require("../schema/ticketSchema");
+    const t = await Ticket.create(req.body);
+    try {
+      sendEmailContact(
+        {
+          email: t.email,
+          subject: `Billet d'avion : ${t.from} -> ${t.to} (${t.departDate})`,
+          message: JSON.stringify(t.toObject(), null, 2),
+        },
+        { status: () => ({ json: () => {} }) }
+      );
+    } catch (e) {
+      console.log("Ticket email failed:", e.message);
+    }
+    res.json({ status: "success", data: t });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "error", message: error.message });
+  }
+});
+
+router.get("/ticket_records", async (req, res) => {
+  try {
+    const Ticket = require("../schema/ticketSchema");
+    const records = await Ticket.find().sort({ createdAt: -1 });
+    res.json({ data: records, status: "success" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching tickets", error: error.message });
+  }
+});
+
+// Mark a website submission as transferred into SoftHadj (approve flow).
+router.post("/mark_transferred", async (req, res) => {
+  try {
+    const { collection, id } = req.body || {};
+    const models = {
+      hajj: require("../schema/hajjSchema"),
+      umra: require("../schema/umraSchema"),
+      ticket: require("../schema/ticketSchema"),
+    };
+    const Model = models[collection];
+    if (!Model || !id) {
+      return res.status(400).json({ status: "error", message: "Bad request" });
+    }
+    await Model.updateOne(
+      { _id: id },
+      { $set: { transferred: true } },
+      { strict: false }
+    );
+    res.json({ status: "success" });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+router.get("/contact_records", async (req, res) => {
+  try {
+    const Contact = require("../schema/contactSchema");
+    const records = await Contact.find().sort({ createdAt: -1 });
+    res.json({ data: records, status: "success" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching contacts", error: error.message });
+  }
 });
 
 router.post("/hajj_book", (req, res) => {
