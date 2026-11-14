@@ -76,6 +76,28 @@ router.get("/ticket_records", async (req, res) => {
   }
 });
 
+// Delete an abandoned website submission (2026-11-14: inbox cleanup —
+// people fill forms and change their minds; unprocessable rows get removed).
+router.post("/delete_submission", async (req, res) => {
+  try {
+    const { collection, id } = req.body || {};
+    const models = {
+      hajj: require("../schema/hajjSchema"),
+      umra: require("../schema/umraSchema"),
+      ticket: require("../schema/ticketSchema"),
+      contact: require("../schema/contactSchema"),
+    };
+    const Model = models[collection];
+    if (!Model || !id) {
+      return res.status(400).json({ status: "error", message: "Bad request" });
+    }
+    await Model.deleteOne({ _id: id });
+    res.json({ status: "success" });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
 // Mark a website submission as transferred into SoftHadj (approve flow).
 router.post("/mark_transferred", async (req, res) => {
   try {
