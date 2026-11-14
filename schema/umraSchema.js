@@ -71,7 +71,7 @@ const bookingSchema = new mongoose.Schema({
     type: [travelerSchema], // Array of traveler objects
     required: true,
   },
-});
+}, { timestamps: true });
 
 const umraBook = mongoose.model("umra_booking", bookingSchema);
 

@@ -83,7 +83,7 @@ const bookingSchema = new mongoose.Schema({
     type: [travelerSchema], // Array of traveler objects
     required: true,
   },
-});
+}, { timestamps: true });
 
 const hajjBook = mongoose.model("hajj_booking", bookingSchema);
 
