@@ -61,7 +61,6 @@ router.post("/token", async (req, res) => {
         delegation: { type: "none" },
         // We present Emma's video; we don't need the visitor's camera.
         video: { input: { camera: false } },
-        runtime_tools: { end_call: true, stay_quiet: true, call_time: true },
       },
     };
 
@@ -77,7 +76,10 @@ router.post("/token", async (req, res) => {
     const text = await r.text();
     if (!r.ok) {
       console.error("Nuance token error:", r.status, text);
-      return res.status(502).json({ error: "Could not start the guide" });
+      // Surface the upstream detail to help diagnose config issues.
+      let detail = text;
+      try { detail = JSON.parse(text).detail || text; } catch (_) {}
+      return res.status(502).json({ error: "Could not start the guide", upstreamStatus: r.status, detail });
     }
 
     // { token: "st_..." }
