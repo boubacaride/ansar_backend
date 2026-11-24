@@ -8,9 +8,10 @@ const router = express.Router();
 
 const NUANCE_API = "https://api.nuancelabs.ai/session-tokens";
 
-// Kadidja was requested, but the Nuance API only ships sam / sonia / mira.
-// Sonia is the closest (female) guide; swap this one value to change her.
-const PERSONA_ID = process.env.NUANCE_PERSONA_ID || "sonia";
+// Nuance ships three avatars: sam / sonia / mira. Boubacar chose MIRA (the
+// realistic one) 2026-11-24; displayed to visitors as "Kadidja". Swap this
+// one value (or the NUANCE_PERSONA_ID env) to change the avatar.
+const PERSONA_ID = process.env.NUANCE_PERSONA_ID || "mira";
 
 // Strict, Hajj/Umrah-only persona. Nuance personas currently speak English
 // only (French is rejected by the API), so Kadidja speaks English for now; the
